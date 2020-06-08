@@ -6,19 +6,22 @@ type Route struct {
 	cost        float32
 }
 
-type RouteDB struct {
+func New(origin string, destination string, cost float32) *Route {
+	return &Route{origin, destination, cost}
+}
+
+type DB struct {
 	routes []Route
 }
 
-func New() RouteDB {
-	rDB := RouteDB{}
-	return rDB
+func NewDB() *DB {
+	return &DB{}
 }
 
-func (rDB *RouteDB) InsertRoute(route Route) {
+func (rDB *DB) InsertRoute(route Route) {
 	rDB.routes = append(rDB.routes, route)
 }
 
-func (rDB *RouteDB) getRoutes() []Route {
+func (rDB *DB) getRoutes() []Route {
 	return rDB.routes
 }

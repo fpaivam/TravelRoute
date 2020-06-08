@@ -3,7 +3,7 @@ package route
 import "testing"
 
 func TestRouteInsert(t *testing.T) {
-	routeDB := RouteDB{}
+	routeDB := NewDB()
 
 	routeDB.InsertRoute(Route{"GRU", "CON", 5.2})
 	routes := routeDB.getRoutes()

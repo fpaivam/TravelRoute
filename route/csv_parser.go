@@ -6,14 +6,17 @@ import (
 	"strings"
 )
 
+// CSVParser defines a Routes CSV Parser
 type CSVParser struct {
 	routeDB *DB
 }
 
+// NewCSVParser constructs a new Routes CSV Parser given a route Database
 func NewCSVParser(routeDB *DB) *CSVParser {
 	return &CSVParser{routeDB}
 }
 
+// ParseStream Parses CSV stream and fills the Route Database
 func (csv *CSVParser) ParseStream(reader io.Reader) {
 	internalBuffer := make([]byte, 0)
 
@@ -43,6 +46,8 @@ func (csv *CSVParser) ParseStream(reader io.Reader) {
 	}
 }
 
+// splitLines splits the data input into lines.
+// Returns an array of lines and the amount of data consumed
 func splitLines(data string) ([]string, int) {
 	lines := make([]string, 0)
 	bytesConsumed := 0
@@ -62,6 +67,8 @@ func splitLines(data string) ([]string, int) {
 	return lines, bytesConsumed
 }
 
+// processLines splits the input in lines and decode them into Route structs
+// Returns an array of Routes and the amount of data consumed
 func processLines(data string) ([]Route, int) {
 	routes := make([]Route, 0)
 	lines, bytesConsumed := splitLines(data)
@@ -77,6 +84,9 @@ func processLines(data string) ([]Route, int) {
 	return routes, bytesConsumed
 }
 
+// processLine splits comma separated input and decode it into a Route struct
+// Returns a Route pointer and an error flag.
+// It will either return nil, true or *Route, false
 func processLine(line string) (*Route, bool) {
 	values := strings.Split(line, ",")
 	if len(values) != 3 {

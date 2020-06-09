@@ -125,13 +125,13 @@ SCL,ORL,20
 `,
 			75,
 			[]Route{
-				Route{"GRU", "BRC", 10},
-				Route{"BRC", "SCL", 5},
-				Route{"GRU", "CDG", 75},
-				Route{"GRU", "SCL", 20},
-				Route{"GRU", "ORL", 56},
-				Route{"ORL", "CDG", 5},
-				Route{"SCL", "ORL", 20}}},
+				{"GRU", "BRC", 10},
+				{"BRC", "SCL", 5},
+				{"GRU", "CDG", 75},
+				{"GRU", "SCL", 20},
+				{"GRU", "ORL", 56},
+				{"ORL", "CDG", 5},
+				{"SCL", "ORL", 20}}},
 		{"InvalidRoute",
 			`GRU,BRC,10
 BRC,SCL,5,asjdfa
@@ -139,8 +139,8 @@ GRU,CDG,75
 `,
 			39,
 			[]Route{
-				Route{"GRU", "BRC", 10},
-				Route{"GRU", "CDG", 75}}},
+				{"GRU", "BRC", 10},
+				{"GRU", "CDG", 75}}},
 		{"Empty", "",
 			0,
 			[]Route{}},
@@ -183,20 +183,20 @@ GRU,ORL,56
 ORL,CDG,5
 SCL,ORL,20`,
 			[]Route{
-				Route{"GRU", "BRC", 10},
-				Route{"BRC", "SCL", 5},
-				Route{"GRU", "CDG", 75},
-				Route{"GRU", "SCL", 20},
-				Route{"GRU", "ORL", 56},
-				Route{"ORL", "CDG", 5},
-				Route{"SCL", "ORL", 20}}},
+				{"GRU", "BRC", 10},
+				{"BRC", "SCL", 5},
+				{"GRU", "CDG", 75},
+				{"GRU", "SCL", 20},
+				{"GRU", "ORL", 56},
+				{"ORL", "CDG", 5},
+				{"SCL", "ORL", 20}}},
 		{"InvalidRoute",
 			`GRU,BRC,10
 BRC,SCL,5,asjdfa
 GRU,CDG,75`,
 			[]Route{
-				Route{"GRU", "BRC", 10},
-				Route{"GRU", "CDG", 75}}},
+				{"GRU", "BRC", 10},
+				{"GRU", "CDG", 75}}},
 		{"Empty", "",
 			[]Route{}},
 	}
@@ -208,7 +208,7 @@ GRU,CDG,75`,
 			csvParser := NewCSVParser(routeDB)
 
 			csvParser.ParseStream(strings.NewReader(tt.input))
-			routes := routeDB.getRoutes()
+			routes := routeDB.GetRoutes()
 
 			if len(tt.expectedRoutes) != len(routes) {
 				t.Fatalf("route.processLines expected %v routes, got %v", len(tt.expectedRoutes), len(routes))

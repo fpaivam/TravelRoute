@@ -6,7 +6,7 @@ func TestRouteInsert(t *testing.T) {
 	routeDB := NewDB()
 
 	routeDB.InsertRoute(Route{"GRU", "CON", 5.2})
-	routes := routeDB.getRoutes()
+	routes := routeDB.GetRoutes()
 
 	if len(routes) != 1 {
 		t.Errorf("routeDB.getRoutes expected size %v, got %v", 1, len(routes))

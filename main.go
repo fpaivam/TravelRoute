@@ -1,9 +1,9 @@
 package main
 
 import (
-	"TravelRoute/graph"
-	"TravelRoute/route"
-	"TravelRoute/web"
+	"TravelRoute/controller"
+	"TravelRoute/dal"
+	"TravelRoute/domain"
 	"bufio"
 	"fmt"
 	"log"
@@ -11,14 +11,14 @@ import (
 	"strings"
 )
 
-func buildRoutesDB() *route.DB {
+func buildRoutesDB() *dal.DB {
 	file, err := os.Open(os.Args[1])
 	if err != nil {
 		log.Fatalf("could not open file: %v", err)
 	}
 
-	routesDB := route.NewDB()
-	parser := route.NewCSVParser(routesDB)
+	routesDB := dal.NewDB()
+	parser := dal.NewCSVParser(routesDB)
 	parser.ParseStream(file)
 
 	fmt.Println("Routes added:")
@@ -45,7 +45,7 @@ func main() {
 	}
 
 	routesDB := buildRoutesDB()
-	srv := web.Start(routesDB, 8080)
+	srv := controller.StartWebServer(routesDB, 8080)
 
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
@@ -62,7 +62,7 @@ func main() {
 		}
 
 		fmt.Println("Calculating best route...")
-		bestRoute, cost := graph.FindCheapestRoute(routesDB.GetRoutes(), origin, destination)
+		bestRoute, cost := domain.FindCheapestRoute(routesDB.GetRoutes(), origin, destination)
 		if len(bestRoute) != 0 {
 			fmt.Printf("Best route: %v > $%v\n", strings.Join(bestRoute, " - "), cost)
 		} else {
@@ -70,5 +70,5 @@ func main() {
 		}
 	}
 
-	web.Stop(srv)
+	controller.StopWebServer(srv)
 }

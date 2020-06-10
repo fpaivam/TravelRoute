@@ -1,8 +1,8 @@
-package web
+package controller
 
 import (
-	"TravelRoute/graph"
-	"TravelRoute/route"
+	"TravelRoute/dal"
+	"TravelRoute/domain"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -13,12 +13,12 @@ import (
 )
 
 func TestStartStopServer(t *testing.T) {
-	srv := Start(route.NewDB(), 8080)
+	srv := StartWebServer(dal.NewDB(), 8080)
 	if srv == nil {
 		t.Errorf("TravelServer expected not nil, got nil")
 	}
 
-	Stop(srv)
+	StopWebServer(srv)
 }
 
 func getRoutes(t *testing.T) string {
@@ -37,13 +37,13 @@ func getRoutes(t *testing.T) string {
 }
 
 func TestGetRoutes(t *testing.T) {
-	routeDB := route.NewDB()
+	routeDB := dal.NewDB()
 
-	routeDB.InsertRoute(*route.New("GRU", "BRC", 10))
-	routeDB.InsertRoute(*route.New("BRC", "SCL", 5))
-	routeDB.InsertRoute(*route.New("GRU", "CDG", 75))
+	routeDB.InsertRoute(*dal.New("GRU", "BRC", 10))
+	routeDB.InsertRoute(*dal.New("BRC", "SCL", 5))
+	routeDB.InsertRoute(*dal.New("GRU", "CDG", 75))
 
-	srv := Start(routeDB, 8080)
+	srv := StartWebServer(routeDB, 8080)
 	if srv == nil {
 		t.Errorf("TravelServer expected not nil, got nil")
 	}
@@ -54,13 +54,13 @@ func TestGetRoutes(t *testing.T) {
 		t.Errorf("Get expected %v, got %v", expect, ret)
 	}
 
-	Stop(srv)
+	StopWebServer(srv)
 }
 
 func TestGetEmptyRoutes(t *testing.T) {
-	routeDB := route.NewDB()
+	routeDB := dal.NewDB()
 
-	srv := Start(routeDB, 8080)
+	srv := StartWebServer(routeDB, 8080)
 	if srv == nil {
 		t.Errorf("TravelServer expected not nil, got nil")
 	}
@@ -71,10 +71,10 @@ func TestGetEmptyRoutes(t *testing.T) {
 		t.Errorf("Get expected %v, got %v", expect, ret)
 	}
 
-	Stop(srv)
+	StopWebServer(srv)
 }
 
-func addRoute(t *testing.T, r route.Route) {
+func addRoute(t *testing.T, r dal.Route) {
 	js, err := json.Marshal(r)
 	if err != nil {
 		t.Fatalf("json.Marshal error: %v\n", err.Error())
@@ -98,16 +98,16 @@ func addRoute(t *testing.T, r route.Route) {
 }
 
 func TestAddRoutes(t *testing.T) {
-	routeDB := route.NewDB()
+	routeDB := dal.NewDB()
 
-	srv := Start(routeDB, 8080)
+	srv := StartWebServer(routeDB, 8080)
 	if srv == nil {
 		t.Errorf("TravelServer expected not nil, got nil")
 	}
 
-	addRoute(t, *route.New("GRU", "BRC", 10))
-	addRoute(t, *route.New("BRC", "SCL", 5))
-	addRoute(t, *route.New("GRU", "CDG", 75))
+	addRoute(t, *dal.New("GRU", "BRC", 10))
+	addRoute(t, *dal.New("BRC", "SCL", 5))
+	addRoute(t, *dal.New("GRU", "CDG", 75))
 
 	expect := `[{"Origin":"GRU","Destination":"BRC","Cost":10},{"Origin":"BRC","Destination":"SCL","Cost":5},{"Origin":"GRU","Destination":"CDG","Cost":75}]`
 	ret := getRoutes(t)
@@ -115,7 +115,7 @@ func TestAddRoutes(t *testing.T) {
 		t.Errorf("Get expected %v, got %v", expect, ret)
 	}
 
-	Stop(srv)
+	StopWebServer(srv)
 }
 
 func getBestRoute(t *testing.T, origin string, destination string) string {
@@ -135,9 +135,9 @@ func getBestRoute(t *testing.T, origin string, destination string) string {
 }
 
 func TestBestRoute(t *testing.T) {
-	routeDB := route.NewDB()
+	routeDB := dal.NewDB()
 
-	srv := Start(routeDB, 8080)
+	srv := StartWebServer(routeDB, 8080)
 	if srv == nil {
 		t.Errorf("TravelServer expected not nil, got nil")
 	}
@@ -147,23 +147,18 @@ func TestBestRoute(t *testing.T) {
 		destination string
 	}{
 		{"GRU", "CDG"},
-		{"GRU", "BRC"},
-		{"BRC", "GRU"},
-		{"GRU", "GRU"},
-		{"asfd", "CDG"},
-		{"BRC", "CDG"},
 	}
 
-	addRoute(t, *route.New("GRU", "BRC", 10))
-	addRoute(t, *route.New("BRC", "SCL", 5))
-	addRoute(t, *route.New("GRU", "CDG", 75))
-	addRoute(t, *route.New("GRU", "SCL", 20))
-	addRoute(t, *route.New("GRU", "ORL", 56))
-	addRoute(t, *route.New("ORL", "CDG", 5))
-	addRoute(t, *route.New("SCL", "ORL", 20))
+	addRoute(t, *dal.New("GRU", "BRC", 10))
+	addRoute(t, *dal.New("BRC", "SCL", 5))
+	addRoute(t, *dal.New("GRU", "CDG", 75))
+	addRoute(t, *dal.New("GRU", "SCL", 20))
+	addRoute(t, *dal.New("GRU", "ORL", 56))
+	addRoute(t, *dal.New("ORL", "CDG", 5))
+	addRoute(t, *dal.New("SCL", "ORL", 20))
 
 	for _, test := range tests {
-		expectedBestRoute, expectedCost := graph.FindCheapestRoute(routeDB.GetRoutes(), test.origin, test.destination)
+		expectedBestRoute, expectedCost := domain.FindCheapestRoute(routeDB.GetRoutes(), test.origin, test.destination)
 		resp := bestRouteResponse{Route: expectedBestRoute, Cost: expectedCost}
 		expectJS, err := json.Marshal(resp)
 		if err != nil {
@@ -176,5 +171,5 @@ func TestBestRoute(t *testing.T) {
 		}
 	}
 
-	Stop(srv)
+	StopWebServer(srv)
 }

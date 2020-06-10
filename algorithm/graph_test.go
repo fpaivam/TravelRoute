@@ -1,4 +1,4 @@
-package graph
+package algorithm
 
 import "testing"
 
@@ -27,6 +27,7 @@ func TestNodeMultipleConnections(t *testing.T) {
 	nodes[1].connect(nodes[2], 5)
 	nodes[0].connect(nodes[3], 75)
 	nodes[0].connect(nodes[2], 20)
+	nodes[0].connect(nodes[2], 10)
 
 	if len(nodes[0].connections) != 3 {
 		t.Errorf("nodes[0].connections expected size %v, got %v", 3, len(nodes[0].connections))
@@ -89,6 +90,7 @@ func TestGraphShortestPath(t *testing.T) {
 		{"BRC", "GRU", []string{}, float32(0)},
 		{"GRU", "GRU", []string{}, float32(0)},
 		{"asfd", "CDG", []string{}, float32(0)},
+		{"CDG", "asfd", []string{}, float32(0)},
 		{"BRC", "CDG", []string{"BRC", "SCL", "ORL", "CDG"}, float32(30)},
 	}
 

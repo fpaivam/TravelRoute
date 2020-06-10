@@ -1,7 +1,6 @@
-package graph
+package algorithm
 
 import (
-	"TravelRoute/route"
 	"container/list"
 )
 
@@ -43,16 +42,6 @@ type Graph struct {
 // NewGraph constructs a new Graph
 func NewGraph() *Graph {
 	return &Graph{nodes: make(map[string]*Node)}
-}
-
-// FindCheapestRoute Constructs a graph and finds the shortest (cheapest) route
-// between origin and destination
-func FindCheapestRoute(routes []route.Route, origin string, destination string) ([]string, float32) {
-	routeGraph := NewGraph()
-	for _, r := range routes {
-		routeGraph.Connect(r.Origin, r.Destination, r.Cost)
-	}
-	return routeGraph.ShortestPath(origin, destination)
 }
 
 // Connect makes a connection between origin and destination with the weigth

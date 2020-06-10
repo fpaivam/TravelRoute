@@ -1,5 +1,5 @@
-// Package route implements simple functions to store and retrieve routes.
-package route
+// Package dal implements simple functions to store and retrieve routes.
+package dal
 
 // Route defines a weighted oriented connection between 2 airports
 type Route struct {

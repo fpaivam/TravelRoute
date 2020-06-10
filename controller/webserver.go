@@ -1,8 +1,8 @@
-package web
+package controller
 
 import (
-	"TravelRoute/graph"
-	"TravelRoute/route"
+	"TravelRoute/dal"
+	"TravelRoute/domain"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -17,8 +17,8 @@ type TravelServer struct {
 	wg  *sync.WaitGroup
 }
 
-// Start starts the webserver at the provided port with the provided databse
-func Start(routeDB *route.DB, port int) *TravelServer {
+// StartWebServer starts the webserver at the provided port with the provided databse
+func StartWebServer(routeDB *dal.DB, port int) *TravelServer {
 	srv := &http.Server{Addr: fmt.Sprintf(":%v", port), Handler: newWebServer(routeDB)}
 
 	// Used to syncronize Stop call
@@ -36,8 +36,8 @@ func Start(routeDB *route.DB, port int) *TravelServer {
 	return &TravelServer{srv, wg}
 }
 
-// Stop stops the webserver at the provided port
-func Stop(ts *TravelServer) {
+// StopWebServer stops the webserver at the provided port
+func StopWebServer(ts *TravelServer) {
 	if err := ts.srv.Shutdown(context.Background()); err != nil {
 		panic(err)
 	}
@@ -48,7 +48,7 @@ func Stop(ts *TravelServer) {
 // webServer defines a route's webserver
 type webServer struct {
 	mux     *http.ServeMux
-	routeDB *route.DB
+	routeDB *dal.DB
 }
 
 // ServeHTTP uses the default ServerHTTP from http
@@ -68,7 +68,7 @@ func (ws *webServer) routeHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(js)
 	case http.MethodPost, http.MethodPut:
-		var route route.Route
+		var route dal.Route
 		err := json.NewDecoder(r.Body).Decode(&route)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -100,7 +100,7 @@ func (ws *webServer) bestRouteHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		expectedBestRoute, expectedCost := graph.FindCheapestRoute(ws.routeDB.GetRoutes(), origin, destination)
+		expectedBestRoute, expectedCost := domain.FindCheapestRoute(ws.routeDB.GetRoutes(), origin, destination)
 		resp := bestRouteResponse{Route: expectedBestRoute, Cost: expectedCost}
 		js, err := json.Marshal(resp)
 		if err != nil {
@@ -120,7 +120,7 @@ type bestRouteResponse struct {
 }
 
 // newWebServer constructs a new Webserver, if no port is provided defaults to 8080
-func newWebServer(routeDB *route.DB) *webServer {
+func newWebServer(routeDB *dal.DB) *webServer {
 	mux := http.NewServeMux()
 	ws := &webServer{mux, routeDB}
 	mux.HandleFunc("/route", ws.routeHandler)

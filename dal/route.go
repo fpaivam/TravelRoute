@@ -1,6 +1,8 @@
 // Package dal implements simple functions to store and retrieve routes.
 package dal
 
+import "io"
+
 // Route defines a weighted oriented connection between 2 airports
 type Route struct {
 	Origin      string
@@ -8,24 +10,28 @@ type Route struct {
 	Cost        float32
 }
 
-// New Constructs a route given an origin destination and cost
-func New(origin string, destination string, cost float32) *Route {
+// NewRoute Constructs a route given an origin destination and cost
+func NewRoute(origin string, destination string, cost float32) *Route {
 	return &Route{origin, destination, cost}
 }
 
 // DB Defines an memory DataBase to store our routes
 type DB struct {
 	routes []Route
+	stream *io.ReadWriter
 }
 
 // NewDB constructs a new Route Database
-func NewDB() *DB {
-	return &DB{make([]Route, 0)}
+func NewDB(stream io.ReadWriter) *DB {
+	db := DB{make([]Route, 0), &stream}
+	newCSVParser(&db).parseStream(&stream)
+	return &db
 }
 
-// InsertRoute inserts an route in the database
+// InsertRoute inserts a route in the database
 func (rDB *DB) InsertRoute(route Route) {
 	rDB.routes = append(rDB.routes, route)
+	newCSVParser(rDB).writeLastRouteToStream(rDB.stream)
 }
 
 // GetRoutes retrieves all routes stored in the Databse

@@ -1,28 +1,33 @@
 package dal
 
 import (
+	"fmt"
 	"io"
+	"log"
 	"strconv"
 	"strings"
 )
 
-// CSVParser defines a Routes CSV Parser
-type CSVParser struct {
+// csvParser defines a Routes CSV Parser
+type csvParser struct {
 	routeDB *DB
 }
 
-// NewCSVParser constructs a new Routes CSV Parser given a route Database
-func NewCSVParser(routeDB *DB) *CSVParser {
-	return &CSVParser{routeDB}
+// newCSVParser constructs a new Routes CSV Parser given a route Database
+func newCSVParser(routeDB *DB) *csvParser {
+	return &csvParser{routeDB}
 }
 
-// ParseStream Parses CSV stream and fills the Route Database
-func (csv *CSVParser) ParseStream(reader io.Reader) {
+// parseStream Parses CSV stream and fills the Route Database
+func (csv *csvParser) parseStream(reader *io.ReadWriter) {
 	internalBuffer := make([]byte, 0)
 
 	for {
 		temporaryBuffer := make([]byte, 1024)
-		bytesRead, err := reader.Read(temporaryBuffer)
+		bytesRead, err := (*reader).Read(temporaryBuffer)
+		if err != io.EOF && err != nil {
+			log.Fatal(err)
+		}
 
 		newInternalBuffer := make([]byte, len(internalBuffer)+bytesRead)
 		copy(newInternalBuffer, internalBuffer)
@@ -37,12 +42,25 @@ func (csv *CSVParser) ParseStream(reader io.Reader) {
 		internalBuffer = newInternalBuffer[bytesConsumed:]
 
 		for _, route := range routes {
-			csv.routeDB.InsertRoute(route)
+			csv.routeDB.routes = append(csv.routeDB.routes, route)
 		}
 
 		if err == io.EOF {
 			break
 		}
+	}
+}
+
+// writeLastRouteToStream writes in CSV the last added route to the stream
+func (csv *csvParser) writeLastRouteToStream(writer *io.ReadWriter) {
+	if len(csv.routeDB.routes) == 0 {
+		return
+	}
+
+	route := csv.routeDB.routes[len(csv.routeDB.routes)-1]
+	_, err := io.WriteString(*writer, toLine(&route))
+	if err != nil {
+		log.Fatal(err)
 	}
 }
 
@@ -84,6 +102,20 @@ func processLines(data string) ([]Route, int) {
 	return routes, bytesConsumed
 }
 
+// toLine transforms the Route Object into a comma separated line
+func toLine(route *Route) string {
+	if route == nil {
+		return ""
+	}
+
+	values := make([]string, 3)
+	values[0] = route.Origin
+	values[1] = route.Destination
+	values[2] = fmt.Sprintf("%.2f", route.Cost)
+
+	return strings.Join(values, ",") + "\n"
+}
+
 // processLine splits comma separated input and decode it into a Route struct
 // Returns a Route pointer and an error flag.
 // It will either return nil, true or *Route, false
@@ -100,5 +132,5 @@ func processLine(line string) (*Route, bool) {
 		return nil, true
 	}
 
-	return New(origin, destination, float32(cost)), false
+	return NewRoute(origin, destination, float32(cost)), false
 }

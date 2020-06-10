@@ -1,9 +1,13 @@
 package dal
 
-import "testing"
+import (
+	"bytes"
+	"testing"
+)
 
 func TestRouteInsert(t *testing.T) {
-	routeDB := NewDB()
+	var buf bytes.Buffer
+	routeDB := NewDB(&buf)
 
 	routeDB.InsertRoute(Route{"GRU", "CON", 5.2})
 	routes := routeDB.GetRoutes()
@@ -18,7 +22,8 @@ func TestRouteInsert(t *testing.T) {
 }
 
 func TestEmptyRoute(t *testing.T) {
-	routeDB := NewDB()
+	var buf bytes.Buffer
+	routeDB := NewDB(&buf)
 
 	routes := routeDB.GetRoutes()
 

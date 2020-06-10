@@ -92,6 +92,8 @@ func TestGraphShortestPath(t *testing.T) {
 		{"asfd", "CDG", []string{}, float32(0)},
 		{"CDG", "asfd", []string{}, float32(0)},
 		{"BRC", "CDG", []string{"BRC", "SCL", "ORL", "CDG"}, float32(30)},
+		{"AAA", "BBB", []string{"AAA", "BBB"}, float32(20)},
+		{"BBB", "AAA", []string{"BBB", "AAA"}, float32(10)},
 	}
 
 	graph := NewGraph()
@@ -102,6 +104,8 @@ func TestGraphShortestPath(t *testing.T) {
 	graph.Connect("GRU", "ORL", 56)
 	graph.Connect("ORL", "CDG", 5)
 	graph.Connect("SCL", "ORL", 20)
+	graph.Connect("AAA", "BBB", 20)
+	graph.Connect("BBB", "AAA", 10)
 
 	for _, test := range tests {
 		route, cost := graph.ShortestPath(test.origin, test.destination)

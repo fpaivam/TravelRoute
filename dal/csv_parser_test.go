@@ -1,7 +1,7 @@
 package dal
 
 import (
-	"strings"
+	"bytes"
 	"testing"
 )
 
@@ -38,6 +38,33 @@ func TestProcessLine(t *testing.T) {
 
 			if tt.expected != *route {
 				t.Errorf("route expected %v, got %v", tt.expected, route)
+			}
+		})
+	}
+}
+
+func TestToLine(t *testing.T) {
+	var tests = []struct {
+		expected string
+		input    *Route
+	}{
+		{"GRU,BRC,10.00\n", &Route{"GRU", "BRC", 10}},
+		{"BRC,SCL,5.00\n", &Route{"BRC", "SCL", 5}},
+		{"GRU,CDG,75.00\n", &Route{"GRU", "CDG", 75}},
+		{"GRU,SCL,20.00\n", &Route{"GRU", "SCL", 20}},
+		{"GRU,ORL,56.00\n", &Route{"GRU", "ORL", 56}},
+		{"ORL,CDG,5.00\n", &Route{"ORL", "CDG", 5}},
+		{"SCL,ORL,20.00\n", &Route{"SCL", "ORL", 20}},
+		{"", nil},
+	}
+
+	for _, tt := range tests {
+		testname := tt.expected
+		t.Run(testname, func(t *testing.T) {
+			value := toLine(tt.input)
+
+			if tt.expected != value {
+				t.Errorf("value expected %v, got %v", tt.expected, value)
 			}
 		})
 	}
@@ -204,10 +231,7 @@ GRU,CDG,75`,
 	for _, tt := range tests {
 		testname := tt.name
 		t.Run(testname, func(t *testing.T) {
-			routeDB := NewDB()
-			csvParser := NewCSVParser(routeDB)
-
-			csvParser.ParseStream(strings.NewReader(tt.input))
+			routeDB := NewDB(bytes.NewBufferString(tt.input))
 			routes := routeDB.GetRoutes()
 
 			if len(tt.expectedRoutes) != len(routes) {
@@ -220,5 +244,19 @@ GRU,CDG,75`,
 				}
 			}
 		})
+	}
+}
+
+func TestWriteStream(t *testing.T) {
+	var buf bytes.Buffer
+	routeDB := NewDB(&buf)
+	routeDB.InsertRoute(*NewRoute("GRU", "BRC", 10))
+	routeDB.InsertRoute(*NewRoute("BRC", "SCL", 5))
+	routeDB.InsertRoute(*NewRoute("GRU", "CDG", 75))
+
+	expected := "GRU,BRC,10.00\nBRC,SCL,5.00\nGRU,CDG,75.00\n"
+	result := buf.String()
+	if expected != result {
+		t.Errorf("value expected %v, got %v", expected, result)
 	}
 }

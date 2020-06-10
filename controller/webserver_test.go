@@ -13,7 +13,8 @@ import (
 )
 
 func TestStartStopServer(t *testing.T) {
-	srv := StartWebServer(dal.NewDB(), 8080)
+	routeDB := dal.NewDB(&bytes.Buffer{})
+	srv := StartWebServer(routeDB, 8080)
 	if srv == nil {
 		t.Errorf("TravelServer expected not nil, got nil")
 	}
@@ -37,11 +38,12 @@ func getRoutes(t *testing.T) string {
 }
 
 func TestGetRoutes(t *testing.T) {
-	routeDB := dal.NewDB()
+	var buf bytes.Buffer
+	routeDB := dal.NewDB(&buf)
 
-	routeDB.InsertRoute(*dal.New("GRU", "BRC", 10))
-	routeDB.InsertRoute(*dal.New("BRC", "SCL", 5))
-	routeDB.InsertRoute(*dal.New("GRU", "CDG", 75))
+	routeDB.InsertRoute(*dal.NewRoute("GRU", "BRC", 10))
+	routeDB.InsertRoute(*dal.NewRoute("BRC", "SCL", 5))
+	routeDB.InsertRoute(*dal.NewRoute("GRU", "CDG", 75))
 
 	srv := StartWebServer(routeDB, 8080)
 	if srv == nil {
@@ -58,7 +60,7 @@ func TestGetRoutes(t *testing.T) {
 }
 
 func TestGetEmptyRoutes(t *testing.T) {
-	routeDB := dal.NewDB()
+	routeDB := dal.NewDB(&bytes.Buffer{})
 
 	srv := StartWebServer(routeDB, 8080)
 	if srv == nil {
@@ -98,16 +100,16 @@ func addRoute(t *testing.T, r dal.Route) {
 }
 
 func TestAddRoutes(t *testing.T) {
-	routeDB := dal.NewDB()
+	routeDB := dal.NewDB(&bytes.Buffer{})
 
 	srv := StartWebServer(routeDB, 8080)
 	if srv == nil {
 		t.Errorf("TravelServer expected not nil, got nil")
 	}
 
-	addRoute(t, *dal.New("GRU", "BRC", 10))
-	addRoute(t, *dal.New("BRC", "SCL", 5))
-	addRoute(t, *dal.New("GRU", "CDG", 75))
+	addRoute(t, *dal.NewRoute("GRU", "BRC", 10))
+	addRoute(t, *dal.NewRoute("BRC", "SCL", 5))
+	addRoute(t, *dal.NewRoute("GRU", "CDG", 75))
 
 	expect := `[{"Origin":"GRU","Destination":"BRC","Cost":10},{"Origin":"BRC","Destination":"SCL","Cost":5},{"Origin":"GRU","Destination":"CDG","Cost":75}]`
 	ret := getRoutes(t)
@@ -135,7 +137,7 @@ func getBestRoute(t *testing.T, origin string, destination string) string {
 }
 
 func TestBestRoute(t *testing.T) {
-	routeDB := dal.NewDB()
+	routeDB := dal.NewDB(&bytes.Buffer{})
 
 	srv := StartWebServer(routeDB, 8080)
 	if srv == nil {
@@ -149,13 +151,13 @@ func TestBestRoute(t *testing.T) {
 		{"GRU", "CDG"},
 	}
 
-	addRoute(t, *dal.New("GRU", "BRC", 10))
-	addRoute(t, *dal.New("BRC", "SCL", 5))
-	addRoute(t, *dal.New("GRU", "CDG", 75))
-	addRoute(t, *dal.New("GRU", "SCL", 20))
-	addRoute(t, *dal.New("GRU", "ORL", 56))
-	addRoute(t, *dal.New("ORL", "CDG", 5))
-	addRoute(t, *dal.New("SCL", "ORL", 20))
+	addRoute(t, *dal.NewRoute("GRU", "BRC", 10))
+	addRoute(t, *dal.NewRoute("BRC", "SCL", 5))
+	addRoute(t, *dal.NewRoute("GRU", "CDG", 75))
+	addRoute(t, *dal.NewRoute("GRU", "SCL", 20))
+	addRoute(t, *dal.NewRoute("GRU", "ORL", 56))
+	addRoute(t, *dal.NewRoute("ORL", "CDG", 5))
+	addRoute(t, *dal.NewRoute("SCL", "ORL", 20))
 
 	for _, test := range tests {
 		expectedBestRoute, expectedCost := domain.FindCheapestRoute(routeDB.GetRoutes(), test.origin, test.destination)

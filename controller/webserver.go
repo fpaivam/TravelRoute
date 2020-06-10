@@ -28,6 +28,7 @@ func StartWebServer(routeDB *dal.DB, port int) *TravelServer {
 		// let Stop know we are done
 		defer wg.Done()
 
+		fmt.Printf("Listening on port %v...\n", port)
 		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 			log.Fatal("ListenAndServe: " + err.Error())
 		}

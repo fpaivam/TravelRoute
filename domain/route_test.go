@@ -2,15 +2,16 @@ package domain
 
 import (
 	"TravelRoute/dal"
+	"bytes"
 	"testing"
 )
 
 func TestGraphShortestPath(t *testing.T) {
-	routeDB := dal.NewDB()
+	routeDB := dal.NewDB(&bytes.Buffer{})
 
-	routeDB.InsertRoute(*dal.New("GRU", "BRC", 10))
-	routeDB.InsertRoute(*dal.New("BRC", "SCL", 5))
-	routeDB.InsertRoute(*dal.New("GRU", "CDG", 75))
+	routeDB.InsertRoute(*dal.NewRoute("GRU", "BRC", 10))
+	routeDB.InsertRoute(*dal.NewRoute("BRC", "SCL", 5))
+	routeDB.InsertRoute(*dal.NewRoute("GRU", "CDG", 75))
 
 	var tests = []struct {
 		origin        string

@@ -12,15 +12,12 @@ import (
 )
 
 func buildRoutesDB() *dal.DB {
-	file, err := os.Open(os.Args[1])
+	file, err := os.OpenFile(os.Args[1], os.O_APPEND|os.O_RDWR, 0644)
 	if err != nil {
 		log.Fatalf("could not open file: %v", err)
 	}
 
-	routesDB := dal.NewDB()
-	parser := dal.NewCSVParser(routesDB)
-	parser.ParseStream(file)
-
+	routesDB := dal.NewDB(file)
 	fmt.Println("Routes added:")
 	for _, route := range routesDB.GetRoutes() {
 		fmt.Println(route)

@@ -34,8 +34,12 @@ func (csv *csvParser) parseStream(reader *io.ReadWriter) {
 		copy(newInternalBuffer[len(internalBuffer):], temporaryBuffer[:bytesRead])
 
 		// Adds a end of line caracter to diferenciate from an incomplete line
+		// Adds it to the stream as well, so the next write starts at the right position
 		if err == io.EOF {
-			newInternalBuffer = append(newInternalBuffer, '\n')
+			if len(newInternalBuffer) > 0 && newInternalBuffer[len(newInternalBuffer)-1] != '\n' {
+				newInternalBuffer = append(newInternalBuffer, '\n')
+				(*reader).Write([]byte{'\n'})
+			}
 		}
 
 		routes, bytesConsumed := processLines(string(newInternalBuffer))

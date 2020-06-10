@@ -21,7 +21,7 @@ func TestNodeConnect(t *testing.T) {
 }
 
 func TestNodeMultipleConnections(t *testing.T) {
-	nodes := []*Node{newNode("GRU"), newNode("BRC"), newNode("SCL"), newNode("CDG")}
+	nodes := []*node{newNode("GRU"), newNode("BRC"), newNode("SCL"), newNode("CDG")}
 
 	nodes[0].connect(nodes[1], 10)
 	nodes[1].connect(nodes[2], 5)

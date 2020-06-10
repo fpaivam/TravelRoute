@@ -5,8 +5,9 @@ import (
 	"TravelRoute/dal"
 )
 
-// FindCheapestRoute Constructs a graph and finds the shortest (cheapest) route
-// between origin and destination
+// FindCheapestRoute Finds the shortest (cheapest) route between origin and destination in routes
+// Returns the list of node labels and the total cost
+// Return an empty slice and 0 in case there is no route
 func FindCheapestRoute(routes []dal.Route, origin string, destination string) ([]string, float32) {
 	routeGraph := algorithm.NewGraph()
 	for _, r := range routes {

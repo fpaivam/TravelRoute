@@ -11,13 +11,15 @@ import (
 	"sync"
 )
 
-// TravelServer defines the server
+// TravelServer defines the HTTP server for the TravelRoute application
 type TravelServer struct {
 	srv *http.Server
 	wg  *sync.WaitGroup
 }
 
-// StartWebServer starts the webserver at the provided port with the provided databse
+// StartWebServer starts the webserver at the provided port
+// Receives a pointer to the DataBase to fetch and persist Route information
+// Returns a pointer to the WebServer that can be Stopped latter
 func StartWebServer(routeDB *dal.DB, port int) *TravelServer {
 	srv := &http.Server{Addr: fmt.Sprintf(":%v", port), Handler: newWebServer(routeDB)}
 
@@ -37,7 +39,8 @@ func StartWebServer(routeDB *dal.DB, port int) *TravelServer {
 	return &TravelServer{srv, wg}
 }
 
-// StopWebServer stops the webserver at the provided port
+// StopWebServer stops the webserver
+// Receives a pointer to the running webserver
 func StopWebServer(ts *TravelServer) {
 	if err := ts.srv.Shutdown(context.Background()); err != nil {
 		panic(err)
@@ -57,6 +60,7 @@ func (ws *webServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ws.mux.ServeHTTP(w, r)
 }
 
+// routeHandler handles requests directed to "/route"
 func (ws *webServer) routeHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
@@ -86,6 +90,7 @@ func (ws *webServer) routeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// bestRouteHandler handles requests directed to "/route/best"
 func (ws *webServer) bestRouteHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
@@ -120,7 +125,7 @@ type bestRouteResponse struct {
 	Cost  float32
 }
 
-// newWebServer constructs a new Webserver, if no port is provided defaults to 8080
+// newWebServer constructs a new Webserver
 func newWebServer(routeDB *dal.DB) *webServer {
 	mux := http.NewServeMux()
 	ws := &webServer{mux, routeDB}

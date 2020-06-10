@@ -12,7 +12,7 @@ import (
 )
 
 func buildRoutesDB() *dal.DB {
-	file, err := os.OpenFile(os.Args[1], os.O_APPEND|os.O_RDWR, 0644)
+	file, err := os.OpenFile(os.Args[1], os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
 		log.Fatalf("could not open file: %v", err)
 	}

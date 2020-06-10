@@ -4,44 +4,15 @@ import (
 	"container/list"
 )
 
-// connection represents a weighted oriented conenection
-type connection struct {
-	destination *Node
-	weight      float32
-}
-
-func newConnection(destination *Node, weight float32) *connection {
-	return &connection{destination: destination, weight: weight}
-}
-
-// Node represents a graph elemment that has weighted oriented conenections
-type Node struct {
-	label       string
-	connections map[string]*connection
-}
-
-func newNode(label string) *Node {
-	return &Node{label: label, connections: make(map[string]*connection)}
-}
-
-func (n *Node) connect(destination *Node, weigth float32) {
-	connection, found := n.connections[destination.label]
-	if !found {
-		connection = newConnection(destination, weigth)
-		n.connections[destination.label] = connection
-	} else {
-		connection.weight = weigth
-	}
-}
-
-// Graph represents a graph
+// Graph represents an oriented and wietghed graph structure
 type Graph struct {
-	nodes map[string]*Node
+	nodes map[string]*node
 }
 
-// NewGraph constructs a new Graph
+// NewGraph constructs an empty Graph
+// Returns a pointer to the new Graph
 func NewGraph() *Graph {
-	return &Graph{nodes: make(map[string]*Node)}
+	return &Graph{nodes: make(map[string]*node)}
 }
 
 // Connect makes a connection between origin and destination with the weigth
@@ -62,6 +33,8 @@ func (g *Graph) Connect(origin string, destination string, weigth float32) {
 }
 
 // ShortestPath finds the shortest Path from origin to destination
+// Returns the list of node labels and the total cost
+// Return an empty slice and 0 in case there is no route
 func (g *Graph) ShortestPath(origin string, destination string) ([]string, float32) {
 	// Invalid input
 	originNode, found := g.nodes[origin]
@@ -88,9 +61,9 @@ func (g *Graph) ShortestPath(origin string, destination string) ([]string, float
 
 	// Main loop
 	for n := toVisit.Front(); n != nil; {
-		visitCost, _ := nodeCost[n.Value.(*Node).label]
-		visitLabel := n.Value.(*Node).label
-		for label, connection := range n.Value.(*Node).connections {
+		visitCost, _ := nodeCost[n.Value.(*node).label]
+		visitLabel := n.Value.(*node).label
+		for label, connection := range n.Value.(*node).connections {
 			currCost, found := nodeCost[label]
 			// New or better connection
 			if !found || (visitCost+connection.weight) < currCost {
@@ -122,4 +95,34 @@ func (g *Graph) ShortestPath(origin string, destination string) ([]string, float
 	route = append([]string{BestOrigin}, route...)
 
 	return route, nodeCost[destination]
+}
+
+// connection represents a weighted oriented conenection
+type connection struct {
+	destination *node
+	weight      float32
+}
+
+func newConnection(destination *node, weight float32) *connection {
+	return &connection{destination: destination, weight: weight}
+}
+
+// node represents a graph elemment that has weighted oriented conenections
+type node struct {
+	label       string
+	connections map[string]*connection
+}
+
+func newNode(label string) *node {
+	return &node{label: label, connections: make(map[string]*connection)}
+}
+
+func (n *node) connect(destination *node, weigth float32) {
+	connection, found := n.connections[destination.label]
+	if !found {
+		connection = newConnection(destination, weigth)
+		n.connections[destination.label] = connection
+	} else {
+		connection.weight = weigth
+	}
 }

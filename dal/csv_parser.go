@@ -18,7 +18,7 @@ func newCSVParser(routeDB *DB) *csvParser {
 	return &csvParser{routeDB}
 }
 
-// parseStream Parses CSV stream and fills the Route Database
+// parseStream parses CSV stream and fills the Route Database
 func (csv *csvParser) parseStream(reader *io.ReadWriter) {
 	internalBuffer := make([]byte, 0)
 
@@ -51,7 +51,7 @@ func (csv *csvParser) parseStream(reader *io.ReadWriter) {
 	}
 }
 
-// writeLastRouteToStream writes in CSV the last added route to the stream
+// writeLastRouteToStream writes in CSV format the last added route to the stream
 func (csv *csvParser) writeLastRouteToStream(writer *io.ReadWriter) {
 	if len(csv.routeDB.routes) == 0 {
 		return

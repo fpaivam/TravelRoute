@@ -1,6 +1,9 @@
 package graph
 
-import "container/list"
+import (
+	"TravelRoute/route"
+	"container/list"
+)
 
 // connection represents a weighted oriented conenection
 type connection struct {
@@ -40,6 +43,16 @@ type Graph struct {
 // NewGraph constructs a new Graph
 func NewGraph() *Graph {
 	return &Graph{nodes: make(map[string]*Node)}
+}
+
+// FindCheapestRoute Constructs a graph and finds the shortest (cheapest) route
+// between origin and destination
+func FindCheapestRoute(routes []route.Route, origin string, destination string) ([]string, float32) {
+	routeGraph := NewGraph()
+	for _, r := range routes {
+		routeGraph.Connect(r.Origin, r.Destination, r.Cost)
+	}
+	return routeGraph.ShortestPath(origin, destination)
 }
 
 // Connect makes a connection between origin and destination with the weigth
@@ -106,8 +119,13 @@ func (g *Graph) ShortestPath(origin string, destination string) ([]string, float
 	}
 
 	// Reverse best route from destination
+	BestOrigin, found := nodeBestOrig[destination]
+	if !found {
+		// No route to destination
+		return make([]string, 0), 0
+	}
+
 	route := []string{destination}
-	BestOrigin, _ := nodeBestOrig[destination]
 	for BestOrigin != origin {
 		route = append([]string{BestOrigin}, route...)
 		BestOrigin, _ = nodeBestOrig[BestOrigin]

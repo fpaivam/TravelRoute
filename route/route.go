@@ -20,7 +20,7 @@ type DB struct {
 
 // NewDB constructs a new Route Database
 func NewDB() *DB {
-	return &DB{}
+	return &DB{make([]Route, 0)}
 }
 
 // InsertRoute inserts an route in the database

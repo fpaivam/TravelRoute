@@ -78,10 +78,19 @@ func TestGraphConnections(t *testing.T) {
 }
 
 func TestGraphShortestPath(t *testing.T) {
-	expectedRoute := []string{
-		"GRU", "BRC", "SCL", "ORL", "CDG",
+	var tests = []struct {
+		origin        string
+		destination   string
+		expectedRoute []string
+		expectedCost  float32
+	}{
+		{"GRU", "CDG", []string{"GRU", "BRC", "SCL", "ORL", "CDG"}, float32(40)},
+		{"GRU", "BRC", []string{"GRU", "BRC"}, float32(10)},
+		{"BRC", "GRU", []string{}, float32(0)},
+		{"GRU", "GRU", []string{}, float32(0)},
+		{"asfd", "CDG", []string{}, float32(0)},
+		{"BRC", "CDG", []string{"BRC", "SCL", "ORL", "CDG"}, float32(30)},
 	}
-	expectedCost := float32(40)
 
 	graph := NewGraph()
 	graph.Connect("GRU", "BRC", 10)
@@ -92,14 +101,16 @@ func TestGraphShortestPath(t *testing.T) {
 	graph.Connect("ORL", "CDG", 5)
 	graph.Connect("SCL", "ORL", 20)
 
-	route, cost := graph.ShortestPath("GRU", "CDG")
-	for i := 0; i < len(expectedRoute); i++ {
-		if route[i] != expectedRoute[i] {
-			t.Errorf("graph.ShortestPath expected route %v, got %v", expectedRoute, route)
+	for _, test := range tests {
+		route, cost := graph.ShortestPath(test.origin, test.destination)
+		for i := 0; i < len(test.expectedRoute); i++ {
+			if route[i] != test.expectedRoute[i] {
+				t.Errorf("graph.ShortestPath expected route %v, got %v", test.expectedRoute, route)
+			}
 		}
-	}
 
-	if cost != expectedCost {
-		t.Errorf("graph.ShortestPath expected cost %v, got %v", expectedCost, cost)
+		if cost != test.expectedCost {
+			t.Errorf("graph.ShortestPath expected cost %v, got %v", test.expectedCost, cost)
+		}
 	}
 }
